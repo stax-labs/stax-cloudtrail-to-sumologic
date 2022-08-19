@@ -51,11 +51,8 @@ Additionally the role we've provided is functionally the same as the role that S
 6. In the Log File discovery section click "Create URL"
    1. Select a 5 minute interval
    2. **At this point you need to deploy the [SNS Subscription](#subscribe-sns-to-collector)**
-7. In the advanced options section select:
-   1. Enable `Extract timestamp information from log file entries`
-   2. Select `Use time zone from log file, if none is detected use collector default`
-   3. Timestamp format is `Automatically detect the format`
-8. Then select Save and wait.
+7. Remaining options are the defaults
+8. When selecting save you might be told that the page is out of date and you need to refresh, after refreshing the source should still have been created.
 
 ### Deploy SumoLogic AWS Resources
 
@@ -65,14 +62,25 @@ The following steps explain what AWS resources you'll need to deploy.
 
 SumoLogic requires a role that the collector can assume which allows access to read files from the Cloudtrail S3 bucket, and access to the KMS Key used to encrypt data in that bucket, we have provided a template under the cloudformation folder in this repo, you can upload this through the console and set the Account ID and External ID based on the values generated during the [Configure Collector](#configure-collector) step or using the CLI:
 
+You will need to get the ARN of the KMS Key that Stax uses to secure your Cloudtrail data, you can do this in the KMS console, by selecting the KMS Key with the alias "cloudtrail" or using the cli
+
+```bash
+aws kms list-aliases --query "Aliases[?AliasName=='alias/cloudtrail']"
+```
+
+Once you have this you can run the deployment:
+
+
 ```bash
 aws cloudformation deploy \
     --template-file file://cloudformation/sumologic_role.yaml \
     --stack-name sumologic-stax-cloudtrail-role \
+    --capabilities CAPABILITY_IAM \
     --parameter-overrides \
         SumoLogicAccountID=<Account ID generated during collector setup> \
         SumoLogicExternalID=<External ID generated during collector setup> \
-        StaxCloudtrailBucket=<The Stax Cloudtrail bucket, the same value provided to Sumo during collector setup>
+        StaxCloudtrailBucket=<The Stax Cloudtrail bucket, the same value provided to Sumo during collector setup> \
+        StaxCloudtrailKMSKey=<The full ARN of the cloudtrail KMS key>
 ```
 
 The output from this cloudformation deployment will be the ARN of the created role, you'll need this value to complete the collector setup.
@@ -90,7 +98,7 @@ Go to Services > Simple Notification Service and select the cloudtrail topic cre
 - Click Create Subscription.
 - Select HTTPS as the protocol
 - Enter the Endpoint URL provided while [configuring the collector](#configure-collector) in Sumo Logic.
-- Click Create subscription and a confirmation request will be sent to Sumo Logic. The request will be automatically confirmed by Sumo Logic, you will know when as the topic ARN will appear in the SumoLogic console.
+- Click Create subscription and a confirmation request will be sent to Sumo Logic. The request will be automatically confirmed by Sumo Logic.
 
 Source: <https://help.sumologic.com/03Send-Data/Sources/02Sources-for-Hosted-Collectors/Amazon-Web-Services/AWS_Sources#set-up-sns-in-aws-highly-recommended>
 
@@ -104,4 +112,4 @@ aws sns subscribe --protocol https \
 
 ### Addendum - Field Extraction
 
-The SumoLogic AWS Observability for AWS Control Tower [guide](https://d1.awsstatic.com/Marketplace/solutions-center/downloads/SumoLogic-AWS-ControlTower-Implementation%20Guide-v2.0.pdfs) also recommends setting up field extractions for your account IDs, see page 12 of the linked document for detailed instructions.
+The SumoLogic AWS Observability for AWS Control Tower [guide](https://d1.awsstatic.com/Marketplace/solutions-center/downloads/SumoLogic-AWS-ControlTower-Implementation%20Guide-v2.0.pdf) also recommends setting up field extractions for your account IDs, see page 12 of the linked document for detailed instructions.

@@ -1,5 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Transform: 'AWS::Serverless-2016-10-31'
+AWSTemplateFormatVersion: 2010-09-09
 Description: "SumoLogic Stax Cloudtrail Bucket access role: https://github.com/stax-labs/stax-cloudtrail-to-sumologic"
 
 Parameters:
@@ -17,7 +16,11 @@ Parameters:
   StaxCloudtrailBucket:
     Type: String
     Description: "The Stax created cloudtrail bucket"
-    
+
+  StaxCloudtrailKMSKey:
+    Type: String
+    Description: "The Stax KMS Key"
+
 Resources:
 
   SumoLogicCloudtrailRole:
@@ -51,12 +54,10 @@ Resources:
           - Effect: Allow
             Action:
               - kms:Decrypt
-            Resource: "*"
-            Condition:
-              StringLike:
-                "kms:RequestAlias": "alias/cloudtrail"
-
+            Resource:
+              - !Ref StaxCloudtrailKMSKey
+              
 Outputs:
-  SumoRoleARN:
+  SumoLogicCloudtrailRoleARN:
     Description: ARN of the created role. Copy this ARN back to Sumo to complete the source creation process.
-    Value: !GetAtt SumoRole.Arn
+    Value: !GetAtt SumoLogicCloudtrailRole.Arn
