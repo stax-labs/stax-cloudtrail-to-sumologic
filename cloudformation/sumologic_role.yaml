@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: "SumoLogic Stax Cloudtrail Bucket access role: https://github.com/stax-labs/stax-cloudtrail-to-sumologic"
+
+Parameters:
+
+  SumoLogicAccountID:
+    Type: String
+    Description: "Provide the Sumo Logic Account ID for trust relationship."
+    Default: ""
+
+  SumoLogicExternalID:
+    Type: String
+    Description: "The Sumo Logic generated External ID for trust relationship"
+    Default: ""
+  
+  StaxCloudtrailBucket:
+    Type: String
+    Description: "The Stax created cloudtrail bucket"
+    
+Resources:
+
+  SumoLogicCloudtrailRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${SumoLogicAccountID}:root"
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Sub "${SumoLogicExternalID}"
+      Path: "/"
+      Policies:
+      - PolicyName: SumoPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:GetObjectVersion
+              - s3:ListBucketVersions
+              - s3:ListBucket
+            Resource:
+              - !Sub "arn:aws:s3:::${StaxCloudtrailBucket}/*"
+              - !Sub "arn:aws:s3:::${StaxCloudtrailBucket}"
+          - Effect: Allow
+            Action:
+              - kms:Decrypt
+            Resource: "*"
+            Condition:
+              StringLike:
+                "kms:RequestAlias": "alias/cloudtrail"
+
+Outputs:
+  SumoRoleARN:
+    Description: ARN of the created role. Copy this ARN back to Sumo to complete the source creation process.
+    Value: !GetAtt SumoRole.Arn
