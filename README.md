@@ -17,7 +17,7 @@ Deploys a simple SumoLogic (SL) forwarder and subscribes it to the Stax created 
 
 Stax implements the [Organization Cloudtrail](https://docs.aws.amazon.com/organizations/latest/userguide/services-that-can-integrate-cloudtrail.html) on behalf of customers, with the log files for the trail ending up in the [Stax Logging Account](https://support.stax.io/hc/en-us/articles/4577859491471-Consume-AWS-Service-Logs-in-the-Logging-Account)
 
-You could also follow the SumoLogic provided guide to setting up Cloudtrail when using Control Tower, however we found that this still requires manual tweaking (for example the SumoLogic created role doesn't allow access to KMS) and it leaves unused resources behind (SumoLogic creates it's own SNS topic which conflicts with teh Stax provided topic, there can be only one)
+You could also follow the SumoLogic provided guide to setting up Cloudtrail when using Control Tower, however we found that this still requires manual tweaking (for example the SumoLogic created role doesn't allow access to KMS) and it leaves unused resources behind (SumoLogic creates it's own SNS topic which conflicts with the Stax provided topic, there can be only one)
 
 ## Caveats
 
