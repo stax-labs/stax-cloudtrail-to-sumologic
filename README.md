@@ -72,7 +72,7 @@ Once you have this you can run the deployment:
 
 
 ```bash
-aws cloudformation deploy \
+$ aws cloudformation deploy \
     --template-file file://cloudformation/sumologic_role.yaml \
     --stack-name sumologic-stax-cloudtrail-role \
     --capabilities CAPABILITY_IAM \
@@ -81,9 +81,14 @@ aws cloudformation deploy \
         SumoLogicExternalID=<External ID generated during collector setup> \
         StaxCloudtrailBucket=<The Stax Cloudtrail bucket, the same value provided to Sumo during collector setup> \
         StaxCloudtrailKMSKey=<The full ARN of the cloudtrail KMS key>
+
+$ aws cloudformation describe-stacks \
+    --stack-name sumologic-stax-cloudtrail-role \
+    --query "Stacks[0].Outputs[?OutputKey=='SumoLogicCloudtrailRoleARN'].OutputValue" \
+    --output text
 ```
 
-The output from this cloudformation deployment will be the ARN of the created role, you'll need this value to complete the collector setup.
+The output from the second command will be the ARN of the created role, you'll need this value to complete the collector setup.
 
 #### Subscribe SNS to Collector
 
